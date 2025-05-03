@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>table 2</title>
+</head>
+<style>
+    table{
+        width: 50%;
+        border-collapse: collapse;
+    }
+    td{
+        text-align: center;
+        padding: 8px;
+    }
+
+    
+
+    td[rowspan]{
+        font-weight: bold;
+    }
+
+    
+
+  
+</style>
+<body>
+    <table border="1">
+        <thead>
+            <tr>
+
+                <th>country</th> <th colspan="2">Population (in Crores)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="3">INDIA</td>
+                <td>1998</td>
+                <td>85</td>
+            </tr>
+            <tr>
+            
+                <td>1998</td>
+                <td>90</td>
+            </tr>
+            <tr>
+            
+                <td>2000</td>
+                <td>100</td>
+            </tr>
+             <!-- USA -->
+            <tr>
+                <td rowspan="3">USA</td>
+                <td>1998</td>
+                <td>30</td>
+            </tr>
+            <tr>
+            
+                <td>1999</td>
+                <td>30</td>
+            </tr>
+            <tr>
+            
+                <td>2000</td>
+                <td>40</td>
+            </tr>
+            <!-- uk -->
+            <tr>
+                <td rowspan="3">UK</td>
+                <td>1998</td>
+                <td>25</td>
+            </tr>
+            <tr>
+            
+                <td>1999</td>
+                <td>30</td>
+            </tr>
+            <tr>
+            
+                <td>2000</td>
+                <td>35</td>
+            </tr>
+        </tbody>
+    </table>
+ 
+    
+</body>
+</html>

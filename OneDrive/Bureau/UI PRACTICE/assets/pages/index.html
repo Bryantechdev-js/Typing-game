@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AmazingCars</title>
+    <link rel="stylesheet" href="/assets/styles/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">AmazingCars</div>
+        <nav>
+            <ul>
+                <li>Home</li>
+                <li>About</li>
+                <li>Contact</li>
+            </ul>
+        </nav>
+        <div class="toggle">
+             *
+        </div>
+    </header>
+    <div class="hero">
+        <div class="textContainer">
+             <h1></h1>
+             <p>We got all type of cars</p>
+             <p>Get one now</p>
+        </div>
+        <div class="imgContainer">
+            <!-- <img src="/assets/image/" alt=""> -->
+             <div class="imageCover">
+                <img src="/assets/image/Screenshot_20241212-165730.png" alt="">
+             </div>
+        </div>
+    </div>
+    <form name="adder">
+        <input type="text" name="name">
+        <button type="button" onclick="check()">click</button>
+    </form>
+   <script src="/assets/scripts/script.js"></script> 
+   <script>
+    const check =()=>{
+        console.log(document.adder.name.value);
+        const confirm=self.confirm("do you want to open a new window")
+        if(confirm){
+
+            const data = self.open("createAndOpenMyOwnWindow.html","def","width-300,hieght-200")
+            console.log(data)
+            data.addEventListener("mouseover",()=>{
+                self.location.href="index.html"
+            })
+        }
+    }
+   </script>
+</body>
+</html>

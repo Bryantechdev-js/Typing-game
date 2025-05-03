@@ -1,0 +1,75 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body{
+    padding: 20px;
+    font-size: 1rem;
+    max-width: 100%;
+    min-height: 100vh;
+}
+
+.colorGeneratorContainer{
+    display: flex;
+    gap: 10px;
+}
+
+:where(.rgb-color-container,.hex-color-container){
+    min-height: 100vh;
+    flex: 1;
+}
+
+button{
+padding: 12px 20px;
+cursor: pointer;
+font-size: 18px;
+font-weight: bold;
+background-color: rgb(230,246,127
+);
+}
+
+.rgb-color-container{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.hex-color-container{
+    background: green;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.hexColorValue{
+    font-size: 3rem;
+    font-weight: bold;
+    font-family: serif;
+    color: white;
+}
+
+:where(.rbgcopyCode,.hexcopyCode){
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 1rem;
+    background: rgb(203, 254, 155);
+}
+
+
+
+.rgb-color-container{
+    background-color: rgb(149, 237, 241);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+

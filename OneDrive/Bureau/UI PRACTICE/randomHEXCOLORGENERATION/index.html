@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RandomHex color generation</title>
+    <link rel="stylesheet" href="./assets/styles/style.css">
+</head>
+<body>
+    <div class="colorGeneratorContainer">
+        <div class="hex-color-container">
+            <p class="hexColorValue">#fff</p>
+            
+            <button class="hexbtn">create hex color</button>
+            <button class="hexcopyCode nb">copy</button>
+        </div>
+        <div class="rgb-color-container">
+            <div class="colorWraper">
+                <label for="red">red</label>
+                <input type="range" min="0" max="255" value="0"  name="red" id="red">
+            </div>
+      
+              <div class="colorWraper">
+                <label for="green">green</label>
+                <input type="range" min="0" max="255" value="0" name="green" id="green">
+              </div>
+         
+              <div class="colorWraper">
+                <label for="blue">blue</label>
+                <input type="range" min="0" max="255" value="0" name="blue" id="blue">
+              </div>
+           
+              <button class="rgb">show rgb</button>
+              <button class="rbgcopyCode nb">copy</button>
+        </div>
+    </div>
+    
+    <script src="./assets/scripts/script.js"></script>
+</body>
+</html>

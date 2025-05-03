@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>code editor like code pen</title>
+    <link rel="stylesheet" href="./assets/style/style.css">
+    <style>
+  
+    </style>
+</head>
+<body>
+    <section class="container">
+        <h1 class="title">Code Editor 😎</h1>
+        <div class="editor">
+            <div class="left">
+                <!-- <label >HTML</label> -->
+                <textarea onkeyup="run()" onkeydown="checkCodeType(html)"spellcheck="false" name="html-code" id="html-code"></textarea>
+                <!-- <label>CSS</label> -->
+                <textarea onkeyup="run()" onkeydown="checkCodeType(css)" spellcheck="false" name="CSS-code" id="css-code"></textarea>
+                <!-- <label>JS</label> -->
+                <textarea onkeyup="run()" onkeydown="checkCodeType(js)"spellcheck="false" name="html-code" id="js-code"></textarea>
+            </div>
+            <div class="right">
+                <!-- <label>Output</label> -->
+                <iframe id="output"></iframe>
+            </div>
+        </div>
+    </section>    
+    
+
+    <script src="./assets/scripts/script.js"></script>
+</body>
+</html>

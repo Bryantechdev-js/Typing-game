@@ -1,0 +1,28 @@
+
+    {
+        "array":[
+
+            {
+        "name":"bryan tech",
+        "age":"20",
+        "others":[
+
+            {
+                "name":"bryan tech",
+                "age":"21"
+            },
+            {
+                "name":"Jtech",
+                "age":"30"
+            },
+            {
+                "name":"CHRONOS",
+                "age":32
+            }
+            
+        ]
+       }
+
+     ]
+    }
+   

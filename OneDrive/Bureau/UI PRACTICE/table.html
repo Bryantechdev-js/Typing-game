@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Country Population Data</title>
+    <style>
+        body{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        /* Basic styling for the table */
+        table {
+            border-collapse: collapse;
+            width: 50%; 
+        }
+        th, td {
+            
+            padding: 8px;          
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2; 
+            font-weight: bold;        
+        }
+        
+        .country-cell {
+            font-weight: bold;      
+        }
+      
+    </style>
+</head>
+<body>
+
+    <h2>Population Data by Country and Year</h2>
+
+    <table border="1" >
+        <thead>
+            <!-- First Header Row -->
+            <tr>
+                <!-- This header spans 2 rows -->
+                <th>Country</th>
+                <!-- This header spans 2 columns -->
+                
+                <th colspan="2">Population (In Crores)</th>
+            </tr>
+            <!-- Second Header Row (defines columns under "Population Details") -->
+         
+        </thead>
+        <tbody>
+            <!-- India Data -->
+            <tr>
+                <td rowspan="3" class="country-cell">INDIA</td> <!-- Spans 3 data rows -->
+                <td>1998</td>
+                <td>85</td>
+            </tr>
+            <tr>
+                <td>1999</td>
+                <td>90</td>
+            </tr>
+            <tr>
+                <td>2000</td>
+                <td>100</td>
+            </tr>
+            <!-- USA Data -->
+             <tr>
+                <td rowspan="3" class="country-cell">USA</td> <!-- Spans 3 data rows -->
+                <td>1998</td>
+                <td>30</td>
+            </tr>
+            <tr>
+                <td>1999</td>
+                <td>35</td>
+            </tr>
+            <tr>
+                <td>2000</td>
+                <td>40</td>
+            </tr>
+            <!-- UK Data -->
+             <tr>
+                <td rowspan="3" class="country-cell">UK</td> <!-- Spans 3 data rows -->
+                <td>1998</td>
+                <td>25</td>
+            </tr>
+            <tr>
+                <td>1999</td>
+                <td>30</td>
+            </tr>
+             <tr>
+                <td>2000</td>
+                <td>35</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body{   
+    max-width: 100%;
+    min-height: 100vh;
+}
+
+body section{
+    max-width: 100%;
+    /* height: 100vh; */
+    min-height:100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    background: lightblue;
+    padding-inline: 30px;
+    padding-block: 30px;
+}
+
+body section h1{
+    text-align: center;
+    padding-block: 20px;
+    font-size: clamp(1rem,3vw,4rem);
+}
+
+h2{
+    font-size: clamp(1.2rem,3vh,4rem);
+}
+
+p{
+    font-size: clamp(1rem,3vh,4rem);
+}
+
+.titleContainer{
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.titleContainer .arroyContainer{
+    transition: all .2s ease;
+
+    transform: rotate(-90deg);
+    cursor: pointer;
+}
+
+.displayFAQ{
+    max-width: 100vw;
+    min-height: auto;
+}
+
+.accordionContent{
+    transition: all 1s ease ;
+
+}
+
+.accordionContent{
+
+    display: none;
+}
+.accordionContainer.active .titleContainer .arroyContainer{
+    transform: rotate(90deg);
+}
+
+.accordionContainer.active .accordionContent{
+    border-top: 2px solid black;
+       display: inline;
+}
+
+
+.accordionContainer{
+  min-width: 100vw;
+  min-height: auto;
+  background: lightcyan;
+  padding-inline: 10px;
+  padding-block: 10px;
+  border-radius: 10px;
+  justify-self: center;
+  
+}
+
