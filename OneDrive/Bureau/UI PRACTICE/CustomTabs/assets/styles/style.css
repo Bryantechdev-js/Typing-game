@@ -1,0 +1,69 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body{
+    max-width: 100%;
+    min-height: 100vh;
+    text-align: center;
+    background-color: aliceblue;
+}
+
+h1{
+    font-size: 40px;
+    color:red;
+    margin-bottom: 50px;
+}
+
+.buttonWrapper{
+    max-width: 100%;
+    height: 50px;
+    padding-block: 15px;
+    padding-inline: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 80px;
+}
+
+.buttonWrapper button{
+    border: none;
+    padding: 12px 12px;
+    background-color: black;
+    font-weight: bold;
+    letter-spacing: 3px;
+    font-size: 18px;
+    cursor: pointer;
+    color: rgb(240, 211, 195);
+    box-shadow: 2px 2px 2px gray,-2px -2px gray;
+}
+
+
+.content{
+    display: none;
+}
+
+.content.active{
+    display: inline;
+}
+
+.buttonWrapper button.active{
+    animation: key 1s ease infinite;
+}
+
+
+.contentWrapper{
+    max-width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes key{
+   to{
+     filter: hue-rotate(360deg) drop-shadow(2px 2px 2px black);
+   }
+}
