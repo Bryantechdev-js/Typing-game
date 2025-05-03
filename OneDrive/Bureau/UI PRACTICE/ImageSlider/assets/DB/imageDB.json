@@ -1,0 +1,59 @@
+{
+    "ImageArray":[
+        {
+            "category":"food",
+            "foodImage":[
+                {
+                    "name":"chocho",
+                    "path":"/assets//image//chocho.png"
+                },
+                {
+                    "name":"affrican meals",
+                    "path":"/assets//image//Screenshot_20241212-125511.png"
+                },
+                {
+                    "name":"solft milky bread",
+                    "path":"/assets//image//Screenshot_20241212-164220.png"
+                }
+            
+            ]
+        },
+        {
+            "category":"cars",
+            "carsImage":[
+                {
+                    "name":"dream car 1",
+                    "path":"/assets//image//Screenshot_20241212-164713.png"
+                },
+                {
+                    "name":"BMW",
+                    "path":"/assets//image//Screenshot_20241212-165730.png"
+                },
+                {
+                    "name":"Benze",
+                    "path":"/assets//image//Screenshot_20241213-064052.png"
+                },
+                {
+                    "name":"ranch Hover",
+                    "path":"/assets//image//Screenshot_20241213-064107.png"
+                },
+                {
+                    "name":"black Beast",
+                    "path":"/assets//image//Screenshot_20241213-064359.png"
+                },
+                {
+                    "name":"white Beast",
+                    "path":"/assets//image//Screenshot_20241214-150450.png"
+                },
+                {
+                    "name":"red Beast",
+                    "path":"/assets//image//Screenshot_20241214-181730.png"
+                },
+                {
+                    "name":"open wind car",
+                    "path":"/assets//image//Screenshot_20241214-181730.png"
+                }
+            ]
+        }
+    ]
+}
