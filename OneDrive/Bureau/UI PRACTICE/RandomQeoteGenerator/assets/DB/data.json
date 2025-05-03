@@ -1,0 +1,29 @@
+{
+    "QuoteArray":[
+          {
+            "QoteCategory":"famous Qotes",
+            "Qotes":[
+                 {
+                    "names":"bryan tech",
+                    "qote":"code to night and get more skills as a dev",
+                    "data":"2020-04-15"
+                 },
+                {
+                    "names":"jack smith",
+                    "qote":"creativity an iniciative is the key to inovation",
+                    "data":"2020-05-15"  
+                },
+                {
+                    "names":"jenny brown",
+                    "qote":"the why,the says,the how, the can ,if, ask your self and innovate",
+                    "data":"2020-05-16"  
+                },
+                {
+                    "names":"binary kate",
+                    "qote":"proverty is fucken so painfull, and limite creativity and innovation",
+                    "data":"2020-05-20"  
+                }
+            ]
+          }
+    ]
+}
