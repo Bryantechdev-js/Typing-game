@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LyricVibe — Pro Lyrics Typing Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#0f1724; --bg2:#2b0d3a; --accent:#ff416c; --accent-2:#833ab4;
+    --glass: rgba(255,255,255,0.06); --glass-2: rgba(255,255,255,0.04);
+    --success:#4caf50; --danger:#ff6b6b; --muted:#9aa4b2;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%; margin:0; font-family:'Poppins',system-ui,Segoe UI,Roboto; background:linear-gradient(135deg,var(--bg1),var(--bg2)); color:#e6eef8}
+  .app{max-width:1100px; margin:28px auto; padding:28px; display:grid; grid-template-columns: 360px 1fr; gap:24px;}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:14px; padding:18px; box-shadow: 0 6px 28px rgba(0,0,0,0.5);}
+
+  /* LEFT SIDEBAR (controls / profile) */
+  .sidebar{display:flex; flex-direction:column; gap:16px; height:calc(100vh - 96px); overflow:auto}
+  .brand{display:flex; align-items:center; gap:12px}
+  .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2)); display:flex;align-items:center;justify-content:center;font-weight:800;color:white}
+  h1.title{font-size:1.25rem;margin:0}
+  label{font-size:0.85rem;color:var(--muted); margin-top:8px; display:block}
+
+  input[type="text"], input[type="search"], select {
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:inherit;
+  }
+  button.btn {
+    padding:10px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:700;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:white; box-shadow: 0 6px 20px rgba(131,58,180,0.18);
+  }
+  button.ghost { background:transparent; border:1px solid rgba(255,255,255,0.06); color:inherit }
+
+  .profile {display:flex; align-items:center; gap:12px; padding:12px; border-radius:10px; background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))}
+  .avatar {width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#ffa3b1);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+  .meta small{display:block;color:var(--muted)}
+
+  /* MAIN AREA */
+  .main {display:flex; flex-direction:column; gap:16px; min-height:70vh;}
+  .controls-row{display:flex; gap:12px; align-items:center}
+  .controls-row > * {flex:1}
+  .song-list{margin-top:8px; max-height:150px; overflow:auto; border-radius:8px; padding:8px; background:var(--glass)}
+  .song-item{padding:8px;border-radius:8px; cursor:pointer; transition:transform .12s ease, background .12s ease}
+  .song-item:hover{transform:translateY(-4px); background:rgba(255,255,255,0.02)}
+  .song-item.selected{background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.03)}
+
+  .player {display:flex; gap:12px; align-items:center; padding:12px; border-radius:10px; background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))}
+  .player .meta {flex:1}
+  .player button.small { padding:8px 10px; border-radius:8px; font-weight:700 }
+
+  /* Lyrics area */
+  .lyrics-area{flex:1; display:flex; flex-direction:column; gap:12px;}
+  .lyrics-box{flex:1; padding:18px; border-radius:12px; background:linear-gradient(180deg,var(--glass),var(--glass-2)); overflow:auto; font-size:1.05rem; line-height:1.7; white-space:pre-wrap; position:relative}
+  .lyrics-box .char{opacity:.95}
+  .lyrics-box .highlight{background:linear-gradient(90deg, rgba(255,65,108,0.22), rgba(131,58,180,0.14)); border-radius:6px; padding:0 2px}
+  .lyrics-box .incorrect{color:var(--danger); text-decoration:underline wavy var(--danger)}
+
+  .typing-row{display:flex; gap:12px; align-items:flex-end}
+  textarea.typing{flex:1; min-height:90px; padding:12px; resize:none; border-radius:12px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:inherit; font-size:1rem}
+  .stats{display:flex; gap:12px; align-items:center; justify-content:space-between; padding:8px}
+
+  .progress-wrap{height:12px; background:rgba(255,255,255,0.03); border-radius:999px; overflow:hidden}
+  .progress-bar{height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); width:0%; transition:width .15s linear}
+
+  .small {font-size:0.85rem; color:var(--muted)}
+
+  /* leaderboard */
+  .leaderboard {margin-top:8px; display:flex; flex-direction:column; gap:6px}
+  .leader {display:flex; justify-content:space-between; padding:8px; border-radius:8px; background:rgba(255,255,255,0.02)}
+
+  /* CONFETTI canvas */
+  canvas#confetti { position:fixed; pointer-events:none; inset:0; z-index:9999; }
+
+  /* responsiveness */
+  @media (max-width:980px){
+    .app{grid-template-columns:1fr; padding:12px}
+    .sidebar{height:auto}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="card sidebar">
+    <div class="brand">
+      <div class="logo">LV</div>
+      <div>
+        <h1 class="title">LyricVibe</h1>
+        <small class="small">Type the beat. Win the vibe.</small>
+      </div>
+    </div>
+
+    <!-- Profile / Login -->
+    <div id="profileCard" class="profile">
+      <div class="avatar" id="avatar">? </div>
+      <div class="meta">
+        <div id="usernameDisplay">Guest</div>
+        <small class="small" id="userBest">No plays yet</small>
+      </div>
+    </div>
+
+    <div>
+      <label for="username">Set display name</label>
+      <input id="username" placeholder="e.g. S.A.M" />
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button id="saveProfile" class="btn">Save</button>
+        <button id="logout" class="ghost">Logout</button>
+      </div>
+    </div>
+
+    <hr style="opacity:.06;border:none;height:1px;background:rgba(255,255,255,0.03)">
+
+    <div>
+      <label for="genreSelect">Genre</label>
+      <select id="genreSelect" aria-label="Genre">
+        <option value="">-- choose genre --</option>
+      </select>
+
+      <label for="songSearch">Search songs (title or artist)</label>
+      <input id="songSearch" type="search" placeholder="Search songs (iTunes preview will be fetched)" />
+
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button id="searchBtn" class="btn">Search</button>
+        <button id="useCustom" class="ghost">Use custom lyrics</button>
+      </div>
+
+      <div class="song-list" id="songList" aria-live="polite"></div>
+    </div>
+
+    <div>
+      <label>Leaderboard</label>
+      <div class="leaderboard" id="leaderboard"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="card main">
+    <div class="player">
+      <div class="meta">
+        <div id="currentSongTitle" style="font-weight:700">No song selected</div>
+        <small id="currentSongArtist" class="small"></small>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="playPause" class="small ghost">Play</button>
+        <button id="resetBtn" class="small ghost">Reset</button>
+      </div>
+    </div>
+
+    <div class="lyrics-area">
+      <div class="lyrics-box" id="lyricsBox" aria-live="polite" aria-atomic="true">
+        <div class="small" id="hint">Select a song and start typing — audio plays only when your typing matches the lyrics.</div>
+      </div>
+
+      <div class="stats">
+        <div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <div><strong>Score:</strong> <span id="score">0</span></div>
+            <div class="small">WPM: <span id="wpm">0</span></div>
+            <div class="small">Acc: <span id="acc">100</span>%</div>
+            <div class="small">Combo: <span id="combo">0</span></div>
+          </div>
+          <div class="small">Time left: <strong id="timer">60</strong>s</div>
+        </div>
+
+        <div style="width:40%">
+          <div class="small">Progress</div>
+          <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
+        </div>
+      </div>
+
+      <div class="typing-row">
+        <textarea id="typingInput" class="typing" placeholder="Type the lyrics here..." disabled></textarea>
+        <div style="display:flex;flex-direction:column;gap:8px;width:220px">
+          <div style="display:flex;gap:8px">
+            <button id="startGame" class="btn">Start</button>
+            <button id="endGame" class="ghost">End</button>
+          </div>
+          <div class="small">Settings</div>
+          <label class="small">Inactivity pause (ms)</label>
+          <input id="inactivityMs" type="text" value="1500" />
+          <label class="small">Ignore case?</label>
+          <select id="ignoreCase"><option value="1">Yes</option><option value="0">No</option></select>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Confetti canvas -->
+<canvas id="confetti"></canvas>
+
+<!-- Hidden audio element for preview -->
+<audio id="audioPlayer" preload="metadata"></audio>
+
+<script>
+/* ============
+   Pro Lyrics Typing Game - Single file
+   ============ */
+
+/* ---------- Utilities & state ---------- */
+const genres = [
+  {id:14, name:'Pop'},
+  {id:21, name:'Rock'},
+  {id:34, name:'Electronic'},
+  {id:15, name:'R&B/Soul'},
+  {id:20, name:'Alternative'}
+];
+
+const el = id => document.getElementById(id);
+
+const state = {
+  username: null,
+  bestScore: 0,
+  currentSong: null,         // {title, artist, preview}
+  lyricsRaw: '',             // raw lyrics text \n
+  lyricsNormalized: '',      // normalized newlines
+  playing: false,
+  timer: null,
+  timeLeft: 60,
+  inactivityMs: 1500,
+  lastTypedAt: 0,
+  ignoreCase: true,
+  typed: '',
+  score:0,
+  combo:0,
+  correctChars:0,
+  totalTypedChars:0
+};
+
+/* ---------- Init UI ---------- */
+function initUI(){
+  // populate genres
+  const gsel = el('genreSelect');
+  genres.forEach(g => {
+    const o = document.createElement('option'); o.value = g.id; o.textContent = g.name;
+    gsel.appendChild(o);
+  });
+
+  // load profile if available
+  const stored = JSON.parse(localStorage.getItem('lv_profile')||'null');
+  if(stored && stored.name){
+    state.username = stored.name;
+    state.bestScore = stored.best || 0;
+    renderProfile();
+  } else {
+    renderProfile();
+  }
+
+  // load leaderboard
+  renderLeaderboard();
+
+  // hook events
+  el('saveProfile').addEventListener('click', saveProfile);
+  el('logout').addEventListener('click', logoutProfile);
+  el('searchBtn').addEventListener('click', searchSongs);
+  el('songSearch').addEventListener('keyup', e=> { if(e.key==='Enter') searchSongs()});
+  el('songList').addEventListener('click', onSongPick);
+  el('startGame').addEventListener('click', startGame);
+  el('endGame').addEventListener('click', endGame);
+  el('playPause').addEventListener('click', toggleManualPlay);
+  el('resetBtn').addEventListener('click', resetTyping);
+  el('typingInput').addEventListener('input', onTyping);
+  el('inactivityMs').addEventListener('change', ()=> state.inactivityMs = Number(el('inactivityMs').value) || 1500);
+  el('ignoreCase').addEventListener('change', ()=> state.ignoreCase = !!Number(el('ignoreCase').value));
+  el('useCustom').addEventListener('click', useCustomLyrics);
+
+  // audio ended handling
+  el('audioPlayer').addEventListener('ended', ()=> {
+    // when preview ends, stop playing state
+    state.playing = false;
+    el('playPause').textContent = 'Play';
+  });
+
+  // prefill random songs (so UI isn't empty)
+  populateHotSongs();
+}
+
+/* ---------- Profile ---------- */
+function saveProfile(){
+  const name = el('username').value.trim();
+  if(!name) return alert('Enter a display name');
+  state.username = name;
+  localStorage.setItem('lv_profile', JSON.stringify({name, best: state.bestScore || 0}));
+  renderProfile();
+  renderLeaderboard();
+}
+function logoutProfile(){
+  localStorage.removeItem('lv_profile');
+  state.username = null;
+  state.bestScore = 0;
+  renderProfile();
+}
+function renderProfile(){
+  el('usernameDisplay').textContent = state.username || 'Guest';
+  el('avatar').textContent = (state.username ? state.username[0].toUpperCase() : 'G');
+  el('userBest').textContent = state.bestScore ? `Best: ${state.bestScore}` : 'No plays yet';
+}
+
+/* ---------- Leaderboard (local) ---------- */
+function addToLeaderboard(name, score){
+  const board = JSON.parse(localStorage.getItem('lv_leaderboard')||'[]');
+  board.push({name, score, at:Date.now()});
+  board.sort((a,b)=>b.score-a.score);
+  localStorage.setItem('lv_leaderboard', JSON.stringify(board.slice(0,20)));
+  renderLeaderboard();
+}
+function renderLeaderboard(){
+  const board = JSON.parse(localStorage.getItem('lv_leaderboard')||'[]');
+  const node = el('leaderboard'); node.innerHTML = '';
+  board.slice(0,6).forEach((r, idx)=>{
+    const div = document.createElement('div'); div.className='leader';
+    div.innerHTML = `<div>${idx+1}. ${r.name}</div><div><strong>${r.score}</strong></div>`;
+    node.appendChild(div);
+  });
+}
+
+/* ---------- Song search (iTunes) ---------- */
+async function searchSongs(){
+  const q = el('songSearch').value.trim();
+  const genreId = el('genreSelect').value;
+  if(!q){
+    alert('Type a search term (song or artist)');
+    return;
+  }
+  el('songList').innerHTML = `<div class="small">Searching iTunes...</div>`;
+  try{
+    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}${genreId?('&genreId='+encodeURIComponent(genreId)):''}&entity=song&limit=25`;
+    const res = await fetch(url);
+    const json = await res.json();
+    renderSongResults(json.results || []);
+  }catch(err){
+    console.error('iTunes search failed', err);
+    el('songList').innerHTML = `<div class="small">Search failed, try again</div>`;
+  }
+}
+function renderSongResults(results){
+  const node = el('songList'); node.innerHTML = '';
+  if(!results.length){ node.innerHTML = `<div class="small">No songs found</div>`; return; }
+  results.forEach(r=>{
+    const div = document.createElement('div'); div.className='song-item';
+    div.dataset.song = JSON.stringify({title:r.trackName, artist:r.artistName, preview:r.previewUrl||''});
+    div.innerHTML = `<strong>${r.trackName}</strong> <div class="small">${r.artistName}</div>`;
+    node.appendChild(div);
+  });
+}
+
+/* Pre-populate a few hot songs so UI isn't empty */
+async function populateHotSongs(){
+  // simple popular search
+  try{
+    const res = await fetch('https://itunes.apple.com/search?term=top+hits&entity=song&limit=10');
+    const json = await res.json();
+    renderSongResults(json.results || []);
+  }catch(e){
+    // ignore
+  }
+}
+
+/* When user picks a song from the list */
+async function onSongPick(e){
+  const item = e.target.closest('.song-item');
+  if(!item) return;
+  // highlight
+  document.querySelectorAll('.song-item').forEach(s=>s.classList.remove('selected'));
+  item.classList.add('selected');
+
+  const song = JSON.parse(item.dataset.song);
+  state.currentSong = song;
+  el('currentSongTitle').textContent = song.title;
+  el('currentSongArtist').textContent = song.artist;
+  // prepare audio preview
+  const audio = el('audioPlayer');
+  if(song.preview){
+    audio.src = song.preview;
+    audio.load();
+  } else {
+    audio.removeAttribute('src');
+    audio.load();
+  }
+
+  // fetch lyrics
+  el('lyricsBox').innerHTML = '<div class="small">Fetching lyrics...</div>';
+  state.lyricsRaw = await fetchLyrics(song.artist, song.title);
+  prepareLyrics(state.lyricsRaw);
+  // enable typing
+  el('typingInput').disabled = false;
+  el('typingInput').value = '';
+  el('hint').style.display = 'none';
+}
+
+/* Custom lyrics option */
+function useCustomLyrics(){
+  const text = prompt('Paste / type your lyrics (short) — avoid extremely long inputs for preview');
+  if(!text) return;
+  state.currentSong = {title: 'Custom Lyrics', artist: el('usernameDisplay').textContent||'You', preview: ''};
+  el('currentSongTitle').textContent = state.currentSong.title;
+  el('currentSongArtist').textContent = state.currentSong.artist;
+  state.lyricsRaw = text;
+  prepareLyrics(text);
+  el('typingInput').disabled = false;
+  el('typingInput').value = '';
+  el('hint').style.display = 'none';
+}
+
+/* Fetch lyrics from lyrics.ovh (fallback to default) */
+async function fetchLyrics(artist, title){
+  try{
+    const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('no lyrics');
+    const json = await res.json();
+    return json.lyrics || ` Lyrics not available — type whatever you like! ♫`;
+  }catch(e){
+    return `Lyrics not available — type whatever you like! `;
+  }
+}
+
+/* Prepare lyrics rendering (normalize newlines and render spans) */
+function prepareLyrics(raw){
+  const normalized = (raw||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  state.lyricsRaw = raw;
+  state.lyricsNormalized = normalized;
+  renderLyricsSpan(normalized);
+  resetTypingState();
+}
+
+/* Render lyrics to the lyricsBox using per-char spans */
+function renderLyricsSpan(text){
+  const box = el('lyricsBox'); box.innerHTML = '';
+  if(!text) { box.innerHTML = '<div class="small">No lyrics to show</div>'; return; }
+  // show small hint/legend at top
+  const frag = document.createDocumentFragment();
+  for(let i=0;i<text.length;i++){
+    const ch = text[i];
+    const span = document.createElement('span');
+    span.className = 'char';
+    span.dataset.index = i;
+    // For newline, put a special element
+    if(ch === '\n') span.innerHTML = '<br>';
+    else span.textContent = ch;
+    frag.appendChild(span);
+  }
+  box.appendChild(frag);
+  box.scrollTop = 0;
+}
+
+/* Reset typing metrics */
+function resetTypingState(){
+  state.typed = '';
+  state.score = 0;
+  state.combo = 0;
+  state.correctChars = 0;
+  state.totalTypedChars = 0;
+  state.timeLeft = 60;
+  state.playing = false;
+  updateStatsUI();
+  el('typingInput').value = '';
+  el('typingInput').focus();
+  el('progressBar').style.width = '0%';
+  el('timer').textContent = state.timeLeft;
+  el('playPause').textContent = 'Play';
+}
+
+/* ---------- Typing logic / audio control ---------- */
+function onTyping(){
+  const now = Date.now();
+  state.lastTypedAt = now;
+  // get typed text
+  const rawInput = el('typingInput').value || '';
+  state.typed = rawInput;
+  state.totalTypedChars = rawInput.length;
+
+  // evaluate correctness prefix
+  const lyrics = state.lyricsNormalized || '';
+  let correctCount = 0;
+  let isPrefix = true;
+  for(let i=0;i<rawInput.length;i++){
+    const a = rawInput[i];
+    const b = lyrics[i] || '';
+    if(charEquals(a,b)){
+      correctCount++;
+    } else {
+      isPrefix = false;
+      // break; // keep counting total typed for accuracy
+    }
+  }
+  state.correctChars = correctCount;
+
+  // update spans classes
+  updateSpans(rawInput);
+
+  // scoring & combo
+  if(isPrefix && rawInput.length>0){
+    state.combo +=1;
+    state.score = correctCount; // simple scoring based on correct chars
+    // play/resume audio mapped to progress
+    resumeAudioForProgress();
+    playCorrectTone();
+  } else if(rawInput.length===0){
+    pauseAudio();
+  } else {
+    // mistake
+    state.combo = 0;
+    pauseAudio();
+    playWrongTone();
+  }
+
+  // inactivity scheduling
+  scheduleInactivityPause();
+
+  updateStatsUI();
+
+  // check completion
+  if(rawInput.length >= lyrics.length && lyrics.length>0 && isPrefix){
+    // user finished
+    onComplete();
+  }
+}
+
+/* Compare chars with case option and forgiving whitespace handling */
+function charEquals(a,b){
+  if(state.ignoreCase){
+    return a.toLowerCase() === b.toLowerCase();
+  }
+  return a === b;
+}
+
+/* Update spans classes to reflect typed correctness */
+function updateSpans(typed){
+  const chars = el('lyricsBox').querySelectorAll('span.char');
+  for(let i=0;i<chars.length;i++){
+    const sp = chars[i];
+    const idx = Number(sp.dataset.index);
+    const t = typed[idx];
+    sp.classList.remove('highlight','incorrect');
+    if(t === undefined) continue;
+    const target = state.lyricsNormalized[idx] || '';
+    if(charEquals(t,target)){
+      sp.classList.add('highlight');
+    } else {
+      sp.classList.add('incorrect');
+    }
+  }
+  // scroll into view near next character
+  const nextIdx = Math.min(typed.length, (state.lyricsNormalized.length-1));
+  const elNext = el('lyricsBox').querySelector(`[data-index="${nextIdx}"]`);
+  if(elNext) elNext.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* audio mapping: compute playback time based on typed progress proportion */
+async function resumeAudioForProgress(){
+  const audio = el('audioPlayer');
+  if(!audio.src) return;
+  // ensure metadata loaded
+  if(!audio.duration || isNaN(audio.duration)){
+    // try to load metadata then set position and play
+    try { await audio.play(); audio.pause(); } catch(e){}
+  }
+  const dur = audio.duration || 0;
+  const ratio = Math.min(1, (state.typed.length / Math.max(1, state.lyricsNormalized.length)));
+  // map to early part of preview so it feels like a snippet; clamp
+  const targetTime = dur * ratio;
+  // slight smoothing: only set if delta is significant
+  if(Math.abs((audio.currentTime || 0) - targetTime) > 0.4) {
+    audio.currentTime = Math.max(0, Math.min(targetTime, dur-0.01));
+  }
+  try{
+    await audio.play();
+    state.playing = true;
+    el('playPause').textContent = 'Pause';
+  }catch(e){
+    // ignore autoplay errors
+    console.warn('Play failed', e);
+  }
+}
+
+/* Pause audio */
+function pauseAudio(){
+  const audio = el('audioPlayer');
+  try { audio.pause(); } catch(e){}
+  state.playing = false;
+  el('playPause').textContent = 'Play';
+}
+
+/* manual play/pause for user */
+function toggleManualPlay(){
+  const audio = el('audioPlayer');
+  if(!audio.src) return;
+  if(state.playing){
+    pauseAudio();
+  } else {
+    // start/resume from mapped position even if not typing
+    resumeAudioForProgress();
+  }
+}
+
+/* schedule inactivity pause */
+let inactivityTimer = null;
+function scheduleInactivityPause(){
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(()=>{
+    // pause if user hasn't typed in configured ms
+    pauseAudio();
+    el('hint').textContent = 'Paused due to inactivity — keep typing to resume';
+  }, state.inactivityMs || Number(el('inactivityMs').value) || 1500);
+}
+
+/* ---------- Game lifecycle ---------- */
+function startGame(){
+  if(!state.currentSong && !state.lyricsNormalized) return alert('Choose a song or use custom lyrics first');
+  resetTypingState();
+  // start countdown
+  if(state.timer) clearInterval(state.timer);
+  state.timer = setInterval(()=>{
+    state.timeLeft--;
+    el('timer').textContent = state.timeLeft;
+    if(state.timeLeft <= 0) endGame();
+  }, 1000);
+  el('typingInput').focus();
+}
+function endGame(){
+  if(state.timer) clearInterval(state.timer);
+  pauseAudio();
+  // compute score & accuracy
+  const accuracy = state.totalTypedChars ? Math.round((state.correctChars / state.totalTypedChars) * 100) : 0;
+  const finalScore = state.score + Math.floor((accuracy/100)*state.combo);
+  // save to leaderboard if logged in
+  const playerName = state.username || el('usernameDisplay').textContent || 'Guest';
+  addToLeaderboard(playerName, finalScore);
+  // update best
+  if(finalScore > state.bestScore){
+    state.bestScore = finalScore;
+    const stored = JSON.parse(localStorage.getItem('lv_profile')||'null') || {};
+    stored.name = state.username || stored.name || playerName;
+    stored.best = state.bestScore;
+    localStorage.setItem('lv_profile', JSON.stringify(stored));
+  }
+  renderProfile();
+  renderLeaderboard();
+  // show summary modal (simple alert for now)
+  showConfetti();
+  setTimeout(()=> alert(`Game over — final score: ${finalScore}\nAccuracy: ${accuracy}%\nCombo: ${state.combo}`), 250);
+}
+
+/* reset typing to start over */
+function resetTyping(){
+  resetTypingState();
+  renderLyricsSpan(state.lyricsNormalized || '');
+  pauseAudio();
+}
+
+/* on complete */
+function onComplete(){
+  // freeze timer and award bonus
+  pauseAudio();
+  clearInterval(state.timer);
+  const finalScore = state.score + state.combo*2;
+  showConfetti();
+  setTimeout(()=> alert(`🎉 You finished! Score: ${finalScore}`), 120);
+}
+
+/* ---------- Stats UI ---------- */
+function updateStatsUI(){
+  el('score').textContent = state.score;
+  // WPM rough estimate: correct chars / 5 / minutes elapsed.
+  // compute elapsed from initial time (60 - timeLeft)
+  const elapsedSec = Math.max(1, 60 - state.timeLeft);
+  const wpm = Math.round((state.correctChars / 5) / (elapsedSec/60));
+  el('wpm').textContent = isFinite(wpm)?wpm:0;
+  const acc = state.totalTypedChars ? Math.round((state.correctChars / state.totalTypedChars)*100) : 100;
+  el('acc').textContent = isFinite(acc)?acc:100;
+  el('combo').textContent = state.combo;
+  // progress
+  const prog = Math.min(100, Math.round((state.correctChars / Math.max(1, state.lyricsNormalized.length)) * 100));
+  el('progressBar').style.width = prog + '%';
+}
+
+/* ---------- Sound effects using WebAudio ---------- */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playBeep(freq=880, duration=0.08, type='sine'){
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.value = 0.001;
+  o.connect(g); g.connect(audioCtx.destination);
+  const now = audioCtx.currentTime;
+  g.gain.setValueAtTime(0.001, now);
+  g.gain.exponentialRampToValueAtTime(0.12, now + 0.01);
+  o.start(now);
+  g.gain.exponentialRampToValueAtTime(0.001, now + duration);
+  o.stop(now + duration + 0.02);
+}
+function playCorrectTone(){ playBeep(880, 0.06, 'triangle'); }
+function playWrongTone(){ playBeep(220, 0.12, 'sawtooth'); }
+
+/* ---------- Confetti (simple canvas) ---------- */
+const confettiCanvas = el('confetti');
+const confettiCtx = confettiCanvas.getContext('2d');
+let confettiPieces = [];
+function resizeConfetti(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+window.addEventListener('resize', resizeConfetti);
+resizeConfetti();
+
+function spawnConfetti(count=80){
+  confettiPieces = [];
+  for(let i=0;i<count;i++){
+    confettiPieces.push({
+      x: Math.random()*confettiCanvas.width,
+      y: Math.random()*-confettiCanvas.height,
+      vx: (Math.random()-0.5)*3,
+      vy: 2+Math.random()*4,
+      size: 6+Math.random()*10,
+      color: i%2? '#ff416c' : '#833ab4',
+      rot: Math.random()*360,
+      spin: (Math.random()-0.5)*0.2
+    });
+  }
+  requestAnimationFrame(confettiLoop);
+}
+let confettiRunning = false;
+function confettiLoop(){
+  confettiRunning = true;
+  confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+  for(let p of confettiPieces){
+    p.x += p.vx; p.y += p.vy; p.rot += p.spin;
+    confettiCtx.save();
+    confettiCtx.translate(p.x,p.y);
+    confettiCtx.rotate(p.rot);
+    confettiCtx.fillStyle = p.color;
+    confettiCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+    confettiCtx.restore();
+  }
+  confettiPieces = confettiPieces.filter(p=>p.y < confettiCanvas.height + 40);
+  if(confettiPieces.length>0) requestAnimationFrame(confettiLoop);
+  else confettiRunning=false;
+}
+function showConfetti(){ spawnConfetti(140); }
+
+/* ---------- Helpers ---------- */
+function showError(msg){
+  console.error(msg);
+  alert(msg);
+}
+
+/* ---------- Init ---------- */
+initUI();
+resetTypingState();
+
+</script>
+</body>
+</html>
