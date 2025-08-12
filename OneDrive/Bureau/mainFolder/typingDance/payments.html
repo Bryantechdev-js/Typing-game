@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Subscription Service — Join Now</title>
+<meta name="description" content="Subscribe to our premium plans weekly, monthly or yearly. Create an account or sign in to get started." />
+<meta name="robots" content="index, follow" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+  /* RESET & BASE */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #121212;
+    color: #eee;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    line-height: 1.4;
+  }
+
+  /* CONTAINER */
+  .container {
+    background-color: #1e1e1e;
+    padding: 2rem 2.5rem;
+    border-radius: 1rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 0 20px #ff416c;
+  }
+
+  h1, h2, h3 {
+    margin: 0 0 1rem;
+    font-weight: 600;
+    color: #ff416c;
+  }
+
+  label {
+    display: block;
+    margin: 1rem 0 0.5rem;
+    font-weight: 600;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-size: 1rem;
+    background-color: #2a2a2a;
+    color: #eee;
+    transition: box-shadow 0.3s ease;
+  }
+
+  input[type="text"]:focus,
+  input[type="password"]:focus,
+  select:focus {
+    outline: none;
+    box-shadow: 0 0 8px #ff416c;
+  }
+
+  button {
+    margin-top: 1.5rem;
+    width: 100%;
+    background-color: #ff416c;
+    border: none;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button:disabled {
+    background-color: #7a2c4f;
+    cursor: not-allowed;
+  }
+
+  button:hover:not(:disabled) {
+    background-color: #833ab4;
+  }
+
+  .toggle-link {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: #ff416c;
+    user-select: none;
+  }
+
+  .error, .success, .info {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .error {
+    background-color: #ff6b6b;
+    color: #fff;
+  }
+
+  .success {
+    background-color: #4caf50;
+    color: #fff;
+  }
+
+  .info {
+    background-color: #2196f3;
+    color: #fff;
+  }
+
+  /* Subscription Plans */
+  .plans {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .plan-option {
+    background-color: #2a2a2a;
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    border: 2px solid transparent;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: border-color 0.25s ease, background-color 0.25s ease;
+    user-select: none;
+  }
+
+  .plan-option.selected {
+    border-color: #ff416c;
+    background-color: #3b0d4a;
+  }
+
+  /* Dashboard */
+  .dashboard {
+    text-align: center;
+  }
+
+  .dashboard h2 {
+    margin-bottom: 0.5rem;
+  }
+
+  .dashboard h3 {
+    margin: 0.75rem 0 1.5rem;
+  }
+
+  .logout-btn {
+    background-color: #833ab4;
+  }
+
+  /* Responsive */
+  @media (max-width: 440px) {
+    .container {
+      padding: 1.5rem 1.75rem;
+      max-width: 100%;
+    }
+
+    button {
+      font-size: 1rem;
+      padding: 0.85rem;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="container" role="main" aria-live="polite" aria-atomic="true" id="app" tabindex="-1">
+  <!-- Content rendered by JS -->
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  // === CONSTANTS ===
+  const LS_USERS_KEY = 'subApp_users';
+  const LS_LOGGED_USER_KEY = 'subApp_loggedUser';
+  const LYGOS_API_URL = 'https://api.lygosapp.com/v1/gateway';
+  const LYGOS_API_KEY = 'lygosapp-548229dd-5407-4b9e-b386-c554526fd831'; // Your real API key
+
+  // === UTILS ===
+  const saveToStorage = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const loadFromStorage = (key) => {
+    try {
+      return JSON.parse(localStorage.getItem(key));
+    } catch {
+      return null;
+    }
+  };
+
+  const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
+  const focusApp = () => document.getElementById('app').focus();
+  const getCurrentDateStr = () => new Date().toISOString().split('T')[0];
+  const generateOrderId = () => `order_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+  // Calculate next due date based on plan and start date
+  const calculateNextDueDate = (startDateStr, plan) => {
+    const startDate = new Date(startDateStr);
+    switch (plan) {
+      case 'weekly':
+        startDate.setDate(startDate.getDate() + 7);
+        break;
+      case 'monthly':
+        startDate.setMonth(startDate.getMonth() + 1);
+        break;
+      case 'yearly':
+        startDate.setFullYear(startDate.getFullYear() + 1);
+        break;
+      default:
+        throw new Error('Unknown subscription plan');
+    }
+    return startDate.toISOString().split('T')[0];
+  };
+
+  // === USER CLASS ===
+  class User {
+    constructor(username, password, subscription = null, subscriptionStartDate = null, nextDueDate = null) {
+      this.username = username;
+      this.password = password;
+      this.subscription = subscription;
+      this.subscriptionStartDate = subscriptionStartDate;
+      this.nextDueDate = nextDueDate;
+    }
+
+    isSubscriptionExpired() {
+      if (!this.nextDueDate) return true;
+      return getCurrentDateStr() > this.nextDueDate;
+    }
+  }
+
+  // === USER STORAGE MANAGEMENT ===
+  class UserManager {
+    static loadUsers() {
+      const rawUsers = loadFromStorage(LS_USERS_KEY) ?? [];
+      return rawUsers.map(u => new User(u.username, u.password, u.subscription, u.subscriptionStartDate, u.nextDueDate));
+    }
+
+    static saveUsers(users) {
+      saveToStorage(LS_USERS_KEY, users);
+    }
+
+    static findUser(username) {
+      const users = this.loadUsers();
+      return users.find(u => u.username.toLowerCase() === username.toLowerCase()) ?? null;
+    }
+
+    static updateUser(updatedUser) {
+      const users = this.loadUsers();
+      const index = users.findIndex(u => u.username === updatedUser.username);
+      if (index === -1) return false;
+      users[index] = updatedUser;
+      this.saveUsers(users);
+      return true;
+    }
+  }
+
+  // === AUTH MANAGEMENT ===
+  class Auth {
+    static login(username) {
+      localStorage.setItem(LS_LOGGED_USER_KEY, username);
+    }
+    static logout() {
+      localStorage.removeItem(LS_LOGGED_USER_KEY);
+    }
+    static getLoggedUser() {
+      return localStorage.getItem(LS_LOGGED_USER_KEY);
+    }
+  }
+
+  // === MESSAGES ===
+  const createMessage = (msg, type = 'error') =>
+    `<div class="${type}" role="alert">${msg}</div>`;
+
+  // === PAYMENT ===
+  /**
+   * Process payment via Lygos API using POST method
+   * @param {string} plan - Subscription plan (weekly/monthly/yearly)
+   * @param {string} username - Username paying
+   * @returns {Promise<object>} payment result
+   */
+  const processPayment = async (plan, username) => {
+    const priceMap = { weekly: 5, monthly: 15, yearly: 150 };
+    const amount = priceMap[plan];
+    if (!amount) throw new Error('Invalid subscription plan for payment.');
+
+    const orderId = generateOrderId();
+    const shopName = 'MySubscriptionService';
+    const message = `Subscription payment for ${username} - ${capitalize(plan)} plan`;
+    // Replace these URLs with your app URLs or success/failure landing pages
+    const successUrl = window.location.href + '?payment=success';
+    const failureUrl = window.location.href + '?payment=failure';
+
+    const bodyPayload = {
+      amount,
+      shop_name: shopName,
+      message,
+      success_url: successUrl,
+      failure_url: failureUrl,
+      order_id: orderId,
+    };
+
+    try {
+      const response = await fetch(LYGOS_API_URL, {
+        method: 'POST',
+        headers: {
+          'api-key': LYGOS_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bodyPayload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Payment API responded with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Lygos Payment Response:', data);
+
+      // Based on real API response, check if payment request created successfully
+      // Here we assume a field 'payment_url' to redirect user for actual payment
+      if (data.payment_url) {
+        // Redirect user to payment gateway
+        window.location.href = data.payment_url;
+        return { success: true, paymentUrl: data.payment_url };
+      } else {
+        // Payment request failed to create
+        return { success: false, error: data.error ?? 'Payment request failed' };
+      }
+    } catch (error) {
+      console.error('Payment processing error:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // === UI RENDERING FUNCTIONS ===
+
+  // SIGN UP FORM
+  const renderSignup = () => {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <h1>Sign Up</h1>
+      <form id="signupForm" aria-label="Sign up form" novalidate>
+        <label for="signup-username">Username</label>
+        <input id="signup-username" name="username" type="text" autocomplete="username" required minlength="3" aria-required="true" />
+        <label for="signup-password">Password</label>
+        <input id="signup-password" name="password" type="password" autocomplete="new-password" required minlength="6" aria-required="true" />
+        <button type="submit" aria-label="Create account">Create Account</button>
+      </form>
+      <p class="toggle-link" role="button" tabindex="0" id="toSignin">Already have an account? Sign In</p>
+      <div id="msg" aria-live="assertive"></div>
+    `;
+
+    const form = document.getElementById('signupForm');
+    const msg = document.getElementById('msg');
+    const toSigninBtn = document.getElementById('toSignin');
+
+    toSigninBtn.addEventListener('click', () => renderSignin());
+    toSigninBtn.addEventListener('keydown', e => {
+      if (['Enter', ' '].includes(e.key)) {
+        e.preventDefault();
+        renderSignin();
+      }
+    });
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      msg.innerHTML = '';
+
+      const formData = new FormData(form);
+      const username = formData.get('username').trim();
+      const password = formData.get('password');
+
+      if (username.length < 3) {
+        msg.innerHTML = createMessage('Username must be at least 3 characters.');
+        return;
+      }
+      if (password.length < 6) {
+        msg.innerHTML = createMessage('Password must be at least 6 characters.');
+        return;
+      }
+
+      if (UserManager.findUser(username)) {
+        msg.innerHTML = createMessage('Username already exists.');
+        return;
+      }
+
+      const users = UserManager.loadUsers();
+      users.push(new User(username, password));
+      UserManager.saveUsers(users);
+
+      msg.innerHTML = `<div class="success">Account created! Redirecting to Sign In...</div>`;
+      setTimeout(() => renderSignin(), 1600);
+    });
+
+    focusApp();
+  };
+
+  // SIGN IN FORM
+  const renderSignin = () => {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <h1>Sign In</h1>
+      <form id="signinForm" aria-label="Sign in form" novalidate>
+        <label for="signin-username">Username</label>
+        <input id="signin-username" name="username" type="text" autocomplete="username" required aria-required="true" />
+        <label for="signin-password">Password</label>
+        <input id="signin-password" name="password" type="password" autocomplete="current-password" required aria-required="true" />
+        <button type="submit" aria-label="Log in">Log In</button>
+      </form>
+      <p class="toggle-link" role="button" tabindex="0" id="toSignup">Don't have an account? Sign Up</p>
+      <div id="msg" aria-live="assertive"></div>
+    `;
+
+    const form = document.getElementById('signinForm');
+    const msg = document.getElementById('msg');
+    const toSignupBtn = document.getElementById('toSignup');
+
+    toSignupBtn.addEventListener('click', () => renderSignup());
+    toSignupBtn.addEventListener('keydown', e => {
+      if (['Enter', ' '].includes(e.key)) {
+        e.preventDefault();
+        renderSignup();
+      }
+    });
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      msg.innerHTML = '';
+
+      const formData = new FormData(form);
+      const username = formData.get('username').trim();
+      const password = formData.get('password');
+
+      const user = UserManager.findUser(username);
+      if (!user) {
+        msg.innerHTML = createMessage('User not found.');
+        return;
+      }
+      if (user.password !== password) {
+        msg.innerHTML = createMessage('Incorrect password.');
+        return;
+      }
+
+      if (user.isSubscriptionExpired()) {
+        Auth.logout();
+        msg.innerHTML = createMessage('Subscription expired. Please subscribe again.', 'info');
+        setTimeout(() => renderSubscription(user), 1800);
+        return;
+      }
+
+      Auth.login(user.username);
+      if (!user.subscription) {
+        renderSubscription(user);
+      } else {
+        renderDashboard(user);
+      }
+    });
+
+    focusApp();
+  };
+
+  // SUBSCRIPTION SELECTION & PAYMENT
+  const renderSubscription = (user) => {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <h1>Choose Your Subscription Plan</h1>
+      <section class="plans" aria-label="Subscription plans" role="list">
+        <div class="plan-option" role="listitem" tabindex="0" data-plan="weekly" aria-pressed="false" aria-label="Weekly plan 5 dollars per week">Weekly - $5 / week</div>
+        <div class="plan-option" role="listitem" tabindex="0" data-plan="monthly" aria-pressed="false" aria-label="Monthly plan 15 dollars per month">Monthly - $15 / month</div>
+        <div class="plan-option" role="listitem" tabindex="0" data-plan="yearly" aria-pressed="false" aria-label="Yearly plan 150 dollars per year">Yearly - $150 / year</div>
+      </section>
+      <button id="subscribe-btn" disabled aria-disabled="true" aria-label="Subscribe to selected plan">Subscribe</button>
+      <p class="toggle-link" role="button" tabindex="0" id="logout">Logout</p>
+      <div id="msg" aria-live="assertive"></div>
+    `;
+
+    const plans = [...document.querySelectorAll('.plan-option')];
+    const subscribeBtn = document.getElementById('subscribe-btn');
+    const msg = document.getElementById('msg');
+    let selectedPlan = null;
+
+    if (user?.subscription) {
+      const preselect = plans.find(p => p.dataset.plan === user.subscription);
+      if (preselect) {
+        updateSelection(preselect);
+      }
+    }
+
+    function updateSelection(planDiv) {
+      plans.forEach(p => {
+        p.classList.remove('selected');
+        p.setAttribute('aria-pressed', 'false');
+      });
+      planDiv.classList.add('selected');
+      planDiv.setAttribute('aria-pressed', 'true');
+      selectedPlan = planDiv.dataset.plan;
+      subscribeBtn.disabled = false;
+      subscribeBtn.setAttribute('aria-disabled', 'false');
+      msg.innerHTML = '';
+    }
+
+    plans.forEach(planDiv => {
+      planDiv.addEventListener('click', () => updateSelection(planDiv));
+      planDiv.addEventListener('keydown', e => {
+        if (['Enter', ' '].includes(e.key)) {
+          e.preventDefault();
+          updateSelection(planDiv);
+        }
+      });
+    });
+
+    subscribeBtn.addEventListener('click', async () => {
+      if (!selectedPlan) {
+        msg.innerHTML = createMessage('Please select a subscription plan.');
+        return;
+      }
+
+      msg.innerHTML = `<div class="info">Processing your payment...</div>`;
+      subscribeBtn.disabled = true;
+      subscribeBtn.setAttribute('aria-disabled', 'true');
+
+      // Process payment
+      const paymentResult = await processPayment(selectedPlan, user.username);
+
+      if (paymentResult.success) {
+        const startDate = getCurrentDateStr();
+        const nextDueDate = calculateNextDueDate(startDate, selectedPlan);
+
+        // Update user subscription info and save
+        user.subscription = selectedPlan;
+        user.subscriptionStartDate = startDate;
+        user.nextDueDate = nextDueDate;
+        UserManager.updateUser(user);
+
+        msg.innerHTML = `<div class="success">Subscribed successfully to the ${capitalize(selectedPlan)} plan! Next payment due on ${nextDueDate}.</div>`;
+
+        setTimeout(() => renderDashboard(user), 2500);
+      } else {
+        msg.innerHTML = createMessage(`Payment failed: ${paymentResult.error || 'Unknown error'}`);
+        subscribeBtn.disabled = false;
+        subscribeBtn.setAttribute('aria-disabled', 'false');
+      }
+    });
+
+    // Logout handler
+    const logoutBtn = document.getElementById('logout');
+    logoutBtn.addEventListener('click', () => {
+      Auth.logout();
+      renderSignin();
+    });
+    logoutBtn.addEventListener('keydown', e => {
+      if (['Enter', ' '].includes(e.key)) {
+        e.preventDefault();
+        Auth.logout();
+        renderSignin();
+      }
+    });
+
+    focusApp();
+  };
+
+  // DASHBOARD
+  const renderDashboard = (user) => {
+    const app = document.getElementById('app');
+    const today = getCurrentDateStr();
+    let subscriptionStatusMsg = '';
+
+    if (user.nextDueDate) {
+      if (today > user.nextDueDate) {
+        subscriptionStatusMsg = '<p class="error">Subscription expired. Please renew.</p>';
+      } else if (today === user.nextDueDate) {
+        subscriptionStatusMsg = '<p class="info">Payment due today. Please renew your subscription.</p>';
+      } else {
+        subscriptionStatusMsg = `<p>Next payment due on <strong>${user.nextDueDate}</strong>.</p>`;
+      }
+    }
+
+    app.innerHTML = `
+      <section class="dashboard" aria-label="User dashboard" tabindex="0">
+        <h1>Welcome, ${user.username}!</h1>
+        <h2>Your Subscription</h2>
+        <h3 style="color:#ff416c;">${capitalize(user.subscription ?? 'None')}</h3>
+        ${subscriptionStatusMsg}
+        <button id="renewBtn" aria-label="Renew subscription">Renew Subscription</button>
+        <button class="logout-btn" id="logoutBtn" aria-label="Logout from your account">Logout</button>
+      </section>
+    `;
+
+    document.getElementById('renewBtn').addEventListener('click', () => renderSubscription(user));
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      Auth.logout();
+      renderSignin();
+    });
+
+    focusApp();
+  };
+
+  // PERIODIC CHECKS
+  const periodicSubscriptionCheck = () => {
+    const username = Auth.getLoggedUser();
+    if (!username) return;
+
+    const user = UserManager.findUser(username);
+    if (!user) return;
+
+    const today = getCurrentDateStr();
+    if (user.nextDueDate && today > user.nextDueDate) {
+      alert('Your subscription has expired. You will be logged out.');
+      Auth.logout();
+      renderSignin();
+    } else if (user.nextDueDate && today === user.nextDueDate) {
+      alert(`Your subscription payment is due today (${user.nextDueDate}). Please renew.`);
+    }
+  };
+
+  // INITIALIZE APP
+  const init = () => {
+    const loggedUser = Auth.getLoggedUser();
+    if (!loggedUser) {
+      renderSignin();
+      return;
+    }
+
+    const user = UserManager.findUser(loggedUser);
+    if (!user) {
+      Auth.logout();
+      renderSignin();
+      return;
+    }
+
+    if (!user.subscription || user.isSubscriptionExpired()) {
+      renderSubscription(user);
+    } else {
+      renderDashboard(user);
+    }
+
+    setInterval(periodicSubscriptionCheck, 60_000);
+  };
+
+  // START
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
