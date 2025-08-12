@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LyricVibe — Pro Lyrics Typing Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #0f1724;
+    --bg2: #2b0d3a;
+    --accent: #ff416c;
+    --accent-2: #833ab4;
+    --glass: rgba(255, 255, 255, 0.06);
+    --glass-2: rgba(255, 255, 255, 0.04);
+    --success: #4caf50;
+    --danger: #ff6b6b;
+    --muted: #9aa4b2;
+  }
+
+  /* Reset and base */
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, var(--bg1), var(--bg2));
+    color: white;
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background particles container */
+  #bgParticles {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .particle {
+    position: absolute;
+    background: var(--accent);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation-name: float;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+    50% { transform: translateY(-20px) translateX(10px); opacity: 0.1; }
+  }
+
+  /* Layout */
+  .app {
+    display: flex;
+    width: 100%;
+    max-width: 1400px;
+    margin: 40px auto;
+    gap: 32px;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--glass);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow:
+      0 0 16px var(--accent),
+      inset 0 0 20px var(--glass-2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    flex: 0 0 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Brand */
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .logo {
+    font-weight: 800;
+    font-size: 2rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    user-select: none;
+  }
+
+  .title {
+    font-weight: 800;
+    font-size: 1.5rem;
+  }
+
+  /* Profile */
+  .profile {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: var(--glass-2);
+    border-radius: 12px;
+  }
+
+  .avatar {
+    background: var(--accent);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+  }
+
+  .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  #usernameDisplay {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  .small {
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+
+  /* Buttons */
+  button.btn {
+    background: var(--accent);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button.btn:hover {
+    background: var(--accent-2);
+  }
+
+  button.ghost {
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  button.ghost:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  /* Forms */
+  input, select, textarea {
+    background: var(--glass);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: white;
+    font-size: 1rem;
+    width: 100%;
+    resize: none;
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: var(--muted);
+  }
+
+  select {
+    cursor: pointer;
+  }
+
+  /* Song List */
+  .song-list {
+    margin-top: 12px;
+    max-height: 280px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1.5px solid var(--accent);
+  }
+
+  .song-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s ease;
+  }
+
+  .song-item:last-child {
+    border-bottom: none;
+  }
+
+  .song-item:hover,
+  .song-item:focus-visible {
+    background: var(--accent-2);
+    outline: none;
+  }
+
+  .song-title {
+    font-weight: 600;
+  }
+
+  .song-artist {
+    opacity: 0.7;
+  }
+
+  /* Leaderboard */
+  .leaderboard {
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1.5px solid var(--accent);
+  }
+
+  .leader {
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .leader:last-child {
+    border-bottom: none;
+  }
+
+  /* Main Area */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .player {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .player .meta {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .player small {
+    opacity: 0.7;
+  }
+
+  /* Lyrics Area */
+  .lyrics-area {
+    background: var(--glass-2);
+    border-radius: 16px;
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .lyrics-box {
+    background: var(--glass);
+    border-radius: 12px;
+    padding: 16px;
+    height: 180px;
+    overflow-y: auto;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    font-family: monospace;
+    color: white;
+  }
+
+  .char {
+    user-select: none;
+  }
+
+  .char.highlight {
+    color: var(--success);
+    font-weight: 700;
+    text-shadow: 0 0 5px var(--success);
+  }
+
+  .char.incorrect {
+    color: var(--danger);
+    text-decoration: underline wavy var(--danger);
+  }
+
+  /* Stats */
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+  }
+
+  .stat-value {
+    font-weight: 700;
+    font-size: 1.4rem;
+  }
+
+  .progress-wrap {
+    width: 100%;
+    height: 12px;
+    background: var(--glass);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  /* Typing row */
+  .typing-row {
+    display: flex;
+    gap: 16px;
+  }
+
+  .typing {
+    flex: 1;
+    font-family: monospace;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    padding: 16px;
+    resize: none;
+    height: 120px;
+    color: white;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .app {
+      flex-direction: column;
+      margin: 20px;
+    }
+
+    .sidebar {
+      flex: none;
+      width: 100%;
+      order: 2;
+    }
+
+    .main {
+      order: 1;
+    }
+  }
+
+  /* Download Button */
+  .download-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 24px;
+    padding: 12px 20px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+  }
+
+  .download-btn.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+</style>
+</head>
+<body>
+
+<!-- Animated background particles -->
+<div class="bg-particles" id="bgParticles"></div>
+
+<div class="app">
+  <!-- LEFT SIDEBAR -->
+  <aside class="card sidebar">
+    <div class="brand">
+      <div class="logo">LV</div>
+      <div>
+        <h1 class="title">LyricVibe</h1>
+        <small class="small">Type the beat. Win the vibe.</small>
+      </div>
+    </div>
+
+    <!-- Profile / Login -->
+    <div id="profileCard" class="profile">
+      <div class="avatar" id="avatar">?</div>
+      <div class="meta">
+        <div id="usernameDisplay">Guest</div>
+        <small class="small" id="userBest">No plays yet</small>
+      </div>
+    </div>
+
+    <div>
+      <label for="username">Set display name</label>
+      <input id="username" placeholder="e.g. S.A.M" />
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button id="saveProfile" class="btn">Save</button>
+        <button id="logout" class="ghost">Logout</button>
+      </div>
+    </div>
+
+    <hr style="opacity:.06;border:none;height:1px;background:rgba(255,255,255,0.03)">
+
+    <div>
+      <label for="genreSelect">Genre</label>
+      <select id="genreSelect" aria-label="Genre">
+        <option value="">-- choose genre --</option>
+      </select>
+
+      <label for="songSearch">Search songs (title or artist)</label>
+      <input id="songSearch" type="search" placeholder="Search songs (iTunes preview will be fetched)" />
+
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button id="searchBtn" class="btn">Search</button>
+        <button id="useCustom" class="ghost">Use custom lyrics</button>
+      </div>
+
+      <div class="song-list" id="songList" aria-live="polite"></div>
+    </div>
+
+    <div>
+      <label>Leaderboard</label>
+      <div class="leaderboard" id="leaderboard"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="card main">
+    <div class="player">
+      <div class="meta">
+        <div id="currentSongTitle" style="font-weight:700">No song selected</div>
+        <small id="currentSongArtist" class="small"></small>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="playPause" class="small ghost" disabled>Play</button>
+        <button id="resetBtn" class="small ghost" disabled>Reset</button>
+      </div>
+    </div>
+
+    <div class="lyrics-area">
+      <div class="lyrics-box" id="lyricsBox" aria-live="polite" aria-atomic="true">
+        <div class="small" id="hint">Select a song and start typing — audio plays only when your typing matches the lyrics.</div>
+      </div>
+
+      <div class="stats">
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <div class="stat-item">
+            <div class="stat-value" id="score">0</div>
+            <div class="small">Score</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="wpm">0</div>
+            <div class="small">WPM</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="acc">100</div>
+            <div class="small">Accuracy %</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="combo">0</div>
+            <div class="small">Combo</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="timer">60</div>
+            <div class="small">Time Left</div>
+          </div>
+        </div>
+
+        <div style="width:40%;min-width:200px;">
+          <div class="small" style="margin-bottom:8px;">Progress</div>
+          <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
+        </div>
+      </div>
+
+      <div class="typing-row">
+        <textarea id="typingInput" class="typing" placeholder="Type the lyrics here..." disabled></textarea>
+        <div style="display:flex;flex-direction:column;gap:12px;width:220px">
+          <div style="display:flex;gap:8px">
+            <button id="startGame" class="btn">Start</button>
+            <button id="endGame" class="ghost" disabled>End</button>
+          </div>
+          <div class="small">Settings</div>
+          <label class="small">Inactivity pause (ms)</label>
+          <input id="inactivityMs" type="text" value="1500" />
+          <label class="small">Ignore case?</label>
+          <select id="ignoreCase"><option value="1">Yes</option><option value="0">No</option></select>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<button class="download-btn" id="downloadBtn" title="Download Song Preview">Download Song</button>
+
+<script>
+(() => {
+  // ====== CONSTANTS =======
+  const GENRES = [
+    { id: 20, name: 'Alternative' },
+    { id: 2, name: 'Blues' },
+    { id: 4, name: 'Hip-Hop/Rap' },
+    { id: 14, name: 'Pop' },
+    { id: 6, name: 'Country' },
+    { id: 18, name: 'Dance' },
+    { id: 7, name: 'Jazz' },
+    { id: 17, name: 'Rock' },
+    { id: 16, name: 'R&B/Soul' },
+  ];
+
+  // ====== DOM Elements =======
+  const genreSelect = document.getElementById('genreSelect');
+  const songSearchInput = document.getElementById('songSearch');
+  const searchBtn = document.getElementById('searchBtn');
+  const useCustomBtn = document.getElementById('useCustom');
+  const songListEl = document.getElementById('songList');
+  const currentSongTitle = document.getElementById('currentSongTitle');
+  const currentSongArtist = document.getElementById('currentSongArtist');
+  const playPauseBtn = document.getElementById('playPause');
+  const resetBtn = document.getElementById('resetBtn');
+  const lyricsBox = document.getElementById('lyricsBox');
+  const typingInput = document.getElementById('typingInput');
+  const startGameBtn = document.getElementById('startGame');
+  const endGameBtn = document.getElementById('endGame');
+  const inactivityMsInput = document.getElementById('inactivityMs');
+  const ignoreCaseSelect = document.getElementById('ignoreCase');
+  const scoreEl = document.getElementById('score');
+  const wpmEl = document.getElementById('wpm');
+  const accEl = document.getElementById('acc');
+  const comboEl = document.getElementById('combo');
+  const timerEl = document.getElementById('timer');
+  const progressBar = document.getElementById('progressBar');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const usernameInput = document.getElementById('username');
+  const saveProfileBtn = document.getElementById('saveProfile');
+  const logoutBtn = document.getElementById('logout');
+  const avatarEl = document.getElementById('avatar');
+  const usernameDisplay = document.getElementById('usernameDisplay');
+  const userBest = document.getElementById('userBest');
+  const leaderboardEl = document.getElementById('leaderboard');
+  const hintEl = document.getElementById('hint');
+
+  // ====== GAME VARIABLES =======
+  let songs = [];
+  let currentSong = null;
+  let audio = null;
+  let lyrics = '';
+  let typedText = '';
+  let correctChars = 0;
+  let mistakes = 0;
+  let score = 0;
+  let combo = 0;
+  let maxCombo = 0;
+  let wpm = 0;
+  let accuracy = 100;
+  let timer = 60;
+  let timerId = null;
+  let gameRunning = false;
+  let inactivityMs = 1500;
+  let inactivityTimer = null;
+  let ignoreCase = true;
+  let username = localStorage.getItem('lv_username') || null;
+
+  // Leaderboard data stored in localStorage
+  const leaderboardKey = 'lv_leaderboard';
+
+  // ====== UTILS =======
+  function setUsername(name) {
+    if (name) {
+      username = name;
+      localStorage.setItem('lv_username', name);
+      usernameDisplay.textContent = name;
+      avatarEl.textContent = name[0].toUpperCase();
+      saveProfileBtn.disabled = true;
+      usernameInput.disabled = true;
+      logoutBtn.style.display = 'inline-block';
+      updateUserBestScore();
+    } else {
+      username = null;
+      localStorage.removeItem('lv_username');
+      usernameDisplay.textContent = 'Guest';
+      avatarEl.textContent = '?';
+      saveProfileBtn.disabled = false;
+      usernameInput.disabled = false;
+      logoutBtn.style.display = 'none';
+      userBest.textContent = 'No plays yet';
+    }
+  }
+
+  function updateUserBestScore() {
+    if (!username) return;
+    const leaderboard = JSON.parse(localStorage.getItem(leaderboardKey)) || [];
+    const userEntry = leaderboard.find(l => l.name === username);
+    if (userEntry) {
+      userBest.textContent = `Best: ${userEntry.score} pts`;
+    } else {
+      userBest.textContent = 'No plays yet';
+    }
+  }
+
+  function updateLeaderboard() {
+    const leaderboard = JSON.parse(localStorage.getItem(leaderboardKey)) || [];
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboardEl.innerHTML = '';
+    if (leaderboard.length === 0) {
+      leaderboardEl.textContent = 'No scores yet';
+      return;
+    }
+    leaderboard.slice(0, 10).forEach((entry, i) => {
+      const div = document.createElement('div');
+      div.className = 'leader';
+      div.textContent = `${i + 1}. ${entry.name} — ${entry.score} pts`;
+      leaderboardEl.appendChild(div);
+    });
+  }
+
+  function saveScore() {
+    if (!username) return;
+    const leaderboard = JSON.parse(localStorage.getItem(leaderboardKey)) || [];
+    const existing = leaderboard.find(l => l.name === username);
+    if (!existing || score > existing.score) {
+      if (existing) existing.score = score;
+      else leaderboard.push({ name: username, score });
+      localStorage.setItem(leaderboardKey, JSON.stringify(leaderboard));
+    }
+  }
+
+  // Display lyrics with spans for each character
+  function displayLyrics(text) {
+    lyricsBox.innerHTML = '';
+    for (const char of text) {
+      const span = document.createElement('span');
+      span.textContent = char;
+      span.className = 'char';
+      lyricsBox.appendChild(span);
+    }
+  }
+
+  // Update stats display
+  function updateStats() {
+    scoreEl.textContent = score;
+    wpmEl.textContent = wpm;
+    accEl.textContent = accuracy.toFixed(1);
+    comboEl.textContent = combo;
+    timerEl.textContent = timer;
+    const progressPercent = (typedText.length / lyrics.length) * 100;
+    progressBar.style.width = `${progressPercent}%`;
+  }
+
+  // Reset all game variables and UI
+  function resetGame() {
+    typedText = '';
+    correctChars = 0;
+    mistakes = 0;
+    score = 0;
+    combo = 0;
+    maxCombo = 0;
+    wpm = 0;
+    accuracy = 100;
+    timer = 60;
+    updateStats();
+    displayLyrics(lyrics);
+    typingInput.value = '';
+    typingInput.disabled = true;
+    playPauseBtn.disabled = true;
+    resetBtn.disabled = true;
+    startGameBtn.disabled = false;
+    endGameBtn.disabled = true;
+    downloadBtn.classList.remove('show');
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+      playPauseBtn.textContent = 'Play';
+    }
+    hintEl.textContent = 'Select a song and start typing — audio plays only when your typing matches the lyrics.';
+    if(timerId) clearInterval(timerId);
+  }
+
+  // Start the game timer and enable typing input
+  function startGame() {
+    if (!lyrics || lyrics.length === 0) {
+      alert('Please select a song or input custom lyrics first!');
+      return;
+    }
+    gameRunning = true;
+    startGameBtn.disabled = true;
+    endGameBtn.disabled = false;
+    typingInput.disabled = false;
+    typingInput.focus();
+    timer = 60;
+    updateStats();
+    inactivityMs = parseInt(inactivityMsInput.value) || 1500;
+    ignoreCase = ignoreCaseSelect.value === '1';
+
+    timerId = setInterval(() => {
+      timer--;
+      updateStats();
+      if (timer <= 0) {
+        endGame();
+      }
+    }, 1000);
+
+    hintEl.textContent = 'Type the lyrics as they appear!';
+  }
+
+  // End the game, disable input, pause audio, show download button
+  function endGame() {
+    gameRunning = false;
+    startGameBtn.disabled = false;
+    endGameBtn.disabled = true;
+    typingInput.disabled = true;
+    if (audio) {
+      audio.pause();
+      playPauseBtn.textContent = 'Play';
+    }
+    if(timerId) clearInterval(timerId);
+    saveScore();
+    updateLeaderboard();
+    downloadBtn.classList.add('show');
+    hintEl.textContent = 'Game ended! You can download the song preview.';
+  }
+
+  // Handle play/pause button
+  function togglePlayPause() {
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play();
+      playPauseBtn.textContent = 'Pause';
+    } else {
+      audio.pause();
+      playPauseBtn.textContent = 'Play';
+    }
+  }
+
+  // Reset song progress and typing input
+  function resetSong() {
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    playPauseBtn.textContent = 'Play';
+    typedText = '';
+    typingInput.value = '';
+    displayLyrics(lyrics);
+    updateStats();
+    combo = 0;
+  }
+
+  // Check if current typing matches lyrics so far
+  function isTypingCorrect() {
+    const typed = typingInput.value;
+    if (ignoreCase) {
+      return lyrics.slice(0, typed.length).toLowerCase() === typed.toLowerCase();
+    }
+    return lyrics.slice(0, typed.length) === typed;
+  }
+
+  // Handle typing input event
+  function onType() {
+    if (!gameRunning) return;
+
+    const typed = typingInput.value;
+    typedText = typed;
+
+    // Reset inactivity timer
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+      if (audio && !audio.paused) {
+        audio.pause();
+        playPauseBtn.textContent = 'Play';
+      }
+    }, inactivityMs);
+
+    // Check correctness
+    if (isTypingCorrect()) {
+      // Update characters typed correctly and scoring
+      const newCorrect = typed.length - correctChars;
+      if (newCorrect > 0) {
+        score += newCorrect * 10;  // 10 points per correct char
+        combo += newCorrect;
+        if (combo > maxCombo) maxCombo = combo;
+        correctChars = typed.length;
+      }
+      // Play audio if paused
+      if (audio && audio.paused) {
+        audio.play();
+        playPauseBtn.textContent = 'Pause';
+      }
+    } else {
+      // Mistake: reset combo, pause audio
+      combo = 0;
+      if (audio && !audio.paused) {
+        audio.pause();
+        playPauseBtn.textContent = 'Play';
+      }
+    }
+
+    // Update mistakes count
+    mistakes = typed.length - correctChars;
+
+    // Update WPM (assuming 5 chars per word), accuracy and stats
+    wpm = Math.round(((correctChars / 5) / ((60 - timer) / 60)) || 0);
+    accuracy = correctChars + mistakes > 0 ? (correctChars / (correctChars + mistakes)) * 100 : 100;
+
+    // Update displayed lyrics coloring
+    const spans = lyricsBox.querySelectorAll('.char');
+    spans.forEach((span, idx) => {
+      if (idx < typed.length) {
+        if (ignoreCase ? 
+            span.textContent.toLowerCase() === typed[idx].toLowerCase() : 
+            span.textContent === typed[idx]) {
+          span.classList.add('highlight');
+          span.classList.remove('incorrect');
+        } else {
+          span.classList.add('incorrect');
+          span.classList.remove('highlight');
+        }
+      } else {
+        span.classList.remove('highlight', 'incorrect');
+      }
+    });
+
+    updateStats();
+
+    // Check for completion
+    if (typed.length >= lyrics.length) {
+      endGame();
+    }
+  }
+
+  // Populate genres dropdown
+  function populateGenres() {
+    GENRES.forEach(g => {
+      const option = document.createElement('option');
+      option.value = g.id;
+      option.textContent = g.name;
+      genreSelect.appendChild(option);
+    });
+  }
+
+  // Fetch songs from iTunes API
+  async function fetchSongs(term = '', genreId = '') {
+    let url = 'https://itunes.apple.com/search?media=music&entity=song&limit=20';
+    if (term) url += `&term=${encodeURIComponent(term)}`;
+    if (genreId) url += `&genreId=${encodeURIComponent(genreId)}`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.results) {
+        songs = data.results;
+        renderSongList();
+      }
+    } catch (err) {
+      console.error('Error fetching songs:', err);
+      songs = [];
+      renderSongList();
+    }
+  }
+
+  // Render song list
+  function renderSongList() {
+    songListEl.innerHTML = '';
+    if (!songs.length) {
+      songListEl.innerHTML = '<div class="small">No songs found.</div>';
+      return;
+    }
+    songs.forEach((song, i) => {
+      const div = document.createElement('div');
+      div.className = 'song-item';
+      div.tabIndex = 0;
+      div.setAttribute('role', 'button');
+      div.setAttribute('aria-label', `${song.trackName} by ${song.artistName}`);
+      div.innerHTML = `
+        <div class="song-title">${song.trackName}</div>
+        <div class="song-artist small">${song.artistName}</div>
+      `;
+      div.addEventListener('click', () => selectSong(i));
+      div.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectSong(i);
+        }
+      });
+      songListEl.appendChild(div);
+    });
+  }
+
+  // Select a song and load dummy lyrics + audio preview
+  function selectSong(index) {
+    const song = songs[index];
+    if (!song) return;
+    currentSong = song;
+    currentSongTitle.textContent = song.trackName;
+    currentSongArtist.textContent = song.artistName;
+    resetGame();
+
+    // Load audio preview
+    if (audio) {
+      audio.pause();
+      audio = null;
+    }
+    audio = new Audio(song.previewUrl);
+    audio.addEventListener('ended', () => {
+      playPauseBtn.textContent = 'Play';
+    });
+
+    playPauseBtn.disabled = false;
+    resetBtn.disabled = false;
+
+    // Set fallback lyrics (since iTunes API does not provide lyrics)
+    lyrics = `Typing game lyrics for "${song.trackName}" by ${song.artistName}.\n\nType these dummy lyrics to play the game.\nHave fun!`;
+    displayLyrics(lyrics);
+  }
+
+  // Use custom lyrics input
+  function useCustomLyrics() {
+    const custom = prompt('Paste your custom lyrics here:');
+    if (custom && custom.trim().length > 0) {
+      currentSongTitle.textContent = 'Custom Lyrics';
+      currentSongArtist.textContent = '';
+      resetGame();
+      lyrics = custom.trim();
+      displayLyrics(lyrics);
+      if(audio) {
+        audio.pause();
+        audio = null;
+      }
+      playPauseBtn.disabled = true;
+      resetBtn.disabled = true;
+    }
+  }
+
+  // Download song preview audio
+  function downloadSongPreview() {
+    if (!currentSong || !currentSong.previewUrl) {
+      alert('No song preview available for download.');
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = currentSong.previewUrl;
+    a.download = `${currentSong.trackName} - ${currentSong.artistName}.mp3`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  // Create background particles
+  function createParticles() {
+    const container = document.getElementById('bgParticles');
+    const particleCount = 30;
+    for(let i=0; i < particleCount; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 12 + 4;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.top = Math.random() * 100 + '%';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (Math.random() * 10 + 5) + 's';
+      p.style.animationDelay = (Math.random() * 10) + 's';
+      container.appendChild(p);
+    }
+  }
+
+  // ======= EVENT LISTENERS =======
+  saveProfileBtn.addEventListener('click', () => {
+    const name = usernameInput.value.trim();
+    if (!name) return alert('Please enter a display name.');
+    setUsername(name);
+    usernameInput.value = '';
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    setUsername(null);
+  });
+
+  searchBtn.addEventListener('click', () => {
+    const term = songSearchInput.value.trim();
+    const genreId = genreSelect.value;
+    if (!term && !genreId) return alert('Please enter a search term or select a genre.');
+    fetchSongs(term, genreId);
+  });
+
+  useCustomBtn.addEventListener('click', () => {
+    useCustomLyrics();
+  });
+
+  playPauseBtn.addEventListener('click', () => {
+    togglePlayPause();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    resetSong();
+  });
+
+  typingInput.addEventListener('input', onType);
+
+  startGameBtn.addEventListener('click', startGame);
+
+  endGameBtn.addEventListener('click', endGame);
+
+  downloadBtn.addEventListener('click', downloadSongPreview);
+
+  // ======= INIT =======
+  function init() {
+    populateGenres();
+    setUsername(username);
+    updateLeaderboard();
+    resetGame();
+    createParticles();
+  }
+
+  init();
+
+})();
+</script>
+
+</body>
+</html>
